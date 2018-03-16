@@ -1,0 +1,25 @@
+{
+  "name": "@ncd/ncd-red-mcp23008",
+  "version": "0.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "MCP23008",
+    "ncd",
+    "relay-control",
+    "i2c"
+  ],
+  "author": "Trey Felton",
+  "license": "ISC",
+  "node-red": {
+    "nodes": {
+      "ncd-mcp23008": "ncd-mcp23008.js"
+    }
+  },
+  "dependencies": {
+    "@ncd/ncd-red-comm": "^1.0.0"
+  }
+}

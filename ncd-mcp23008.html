@@ -1,0 +1,122 @@
+<script type="text/javascript">
+	RED.comms.subscribe('ncd-dependencies', (t,d) => {
+		
+		RED.notify(d);
+	})
+    RED.nodes.registerType('ncd-mcp23008',{
+        category: 'NCD',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value: ""},
+			connection: {value: "", type: "ncd-comm"},
+			addr: {value: "32"},
+			interval: {value: 0, validate: RED.validators.number()},
+			onchange: {value: ""},
+			outputs: {value: 1},
+			output_all: {value: 0},
+			io_1: {value: 1},
+			io_2: {value: 1},
+			io_3: {value: 1},
+			io_4: {value: 1},
+			io_5: {value: 1},
+			io_6: {value: 1},
+			io_7: {value: 1},
+			io_8: {value: 1},
+        },
+        inputs:1,
+        outputs:1,
+		icon: "serial.png",
+        label: function() {
+            return this.name || "MCP23008";
+        },
+		outputLabels: function(i){
+			if(!this.output_all || i == 8) return 'Device Status';
+			return 'GPIO '+(i+1);
+		},
+
+		oneditsave: function(){
+			this.outputs = $('#node-input-output_all').is(':checked') ? 9 : 1;
+		}
+    });
+</script>
+
+<script type="text/x-red" data-template-name="ncd-mcp23008">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+	<div class="form-row">
+        <label for="node-input-connection"><i class="icon-tag"></i> I2C Connection</label>
+        <select id="node-input-connection"></select>
+    </div>
+	<div class="form-row">
+        <label for="node-input-addr"><i class="icon-tag"></i> Device Address</label>
+        <select id="node-input-addr">
+			<option value="32">32</option>
+			<option value="33">33</option>
+			<option value="34">34</option>
+			<option value="35">35</option>
+			<option value="36">36</option>
+			<option value="37">37</option>
+			<option value="38">38</option>
+			<option value="39">39</option>
+		</select>
+    </div>
+	<div class="form-row">
+        <label for="node-input-interval"><i class="icon-repeat"></i> Interval</label>
+        <input type="text" id="node-input-interval" placeholder="Interval">
+    </div>
+	<div class="form-row">
+        <label for="node-input-onchange"><i class="icon-tag"></i> Only send message on change</label>
+        <input type="checkbox" id="node-input-onchange" value="1" placeholder="Interval">
+    </div>
+	<div class="form-row" id="ncd-device-data-wrapper">
+    	<input type="hidden" id="node-input-data">
+	</div>
+	<div class="form-tips">
+		By default this device will have 1 output, which will send a payload anytime it detects a status change on the device (or everyime it recieves a message with a topic of "get_status"). Use this option to enable seperate outputs for each channel.
+	</div>
+	<div class="form-row">
+		<label for="node-input-output_all"><i class="icon-tag"></i> Output all channels</label>
+		<input type="checkbox" id="node-input-output_all" value="1">
+	</div>
+	<div class="form-tips">
+		Select the channels that should act as outputs. If you have a relay controller, select the channels up the the number of relays, i.e. 1-4 for a 4 channel controller.
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_1"><i class="icon-tag"></i> Channel 1</label>
+		<input type="checkbox" id="node-input-io_1" name="node-input-io_1" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_2"><i class="icon-tag"></i> Channel 2</label>
+		<input type="checkbox" id="node-input-io_2" name="node-input-io_2" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_3"><i class="icon-tag"></i> Channel 3</label>
+		<input type="checkbox" id="node-input-io_3" name="node-input-io_3" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_4"><i class="icon-tag"></i> Channel 4</label>
+		<input type="checkbox" id="node-input-io_4" name="node-input-io_4" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_5"><i class="icon-tag"></i> Channel 5</label>
+		<input type="checkbox" id="node-input-io_5" name="node-input-io_5" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_6"><i class="icon-tag"></i> Channel 6</label>
+		<input type="checkbox" id="node-input-io_6" name="node-input-io_6" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_7"><i class="icon-tag"></i> Channel 7</label>
+		<input type="checkbox" id="node-input-io_7" name="node-input-io_7" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-io_8"><i class="icon-tag"></i> Channel 8</label>
+		<input type="checkbox" id="node-input-io_8" name="node-input-io_8" value="1">
+	</div>
+</script>
+
+<script type="text/x-red" data-help-name="ncd-mcp23008">
+    <p>An I2C Device</p>
+</script>
