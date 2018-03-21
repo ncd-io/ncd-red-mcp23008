@@ -117,8 +117,10 @@ module.exports = function(RED){
 						status = JSON.stringify(res);
 						send_payload(res);
 					}).catch((err) => {
-						console.log(err);
+						//console.log(err);
 					});
+				}else{
+					console.log(node.sensor.settable);
 				}
 			}
 		});
@@ -149,26 +151,51 @@ class MCP23008{
 			this.iodir = (this.iodir << 1) | (this.data["io_"+i] ? 0 : 1);
 			this.data.ios[i] = this.data["io_"+i];
 		}
-		this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
 		Promise.all([
 			this.comm.writeBytes(this.addr, 0x00, this.iodir),
+			// this.comm.writeBytes(this.addr, 0x01, 0),
 			this.comm.writeBytes(this.addr, 0x06, this.iodir)
-		]).then().catch((err) => {
-			console.log(err);
-		})
+		]).then().catch();
+		this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
+		// this.comm.readBytes(this.addr, 0x00, 11).then((config) => {
+		// 	let [iodir, ipol, gpint, defval, intcon, iocon, pu, intf, intcap, ioreg, olat] = config;
+		//
+		// 	console.log(this.iodir);
+		//
+		// 	var promises = [];
+		// 	if(iodir != this.iodir) promises.push(this.comm.writeBytes(this.addr, 0x00, this.iodir));
+		// 	if(ipol != 0) promises.push(this.comm.writeBytes(this.addr, 0x01, 0));
+		// 	if(pu != this.iodir) promises.push(this.comm.writeBytes(this.addr, 0x06, this.iodir));
+		//
+		// 	promises.push(this.comm.readBytes(this.addr, 0x00, 11));
+		//
+		// 	Promise.all(promises).then((res) => {
+		// 		console.log(res);
+		// 	}).catch((err) => {
+		// 		throw err;
+		// 	});
+		// }).catch((err) => {
+		// 	throw err;
+		// });
 	}
 	get(){
 		var sensor = this;
 		return new Promise((fulfill, reject) => {
 			Promise.all([
-				sensor.comm.readByte(sensor.addr, 0x0A),
-				sensor.comm.readByte(sensor.addr, 0x09)
+				sensor.comm.readByte(sensor.addr, 9),
+				sensor.comm.readByte(sensor.addr, 10)
 			]).then((res) => {
-				sensor.input_status = res[1];
-				sensor.output_status = res[0];
+				sensor.input_status = res[0];
+				sensor.output_status = res[1];
 				var readings = sensor.parseStatus();
 				fulfill(readings);
 			}).catch(reject);
+			// sensor.comm.readBytes(sensor.addr, 0x09, 2).then((res) => {
+			// 	sensor.input_status = res[0];
+			// 	sensor.output_status = res[1];
+			// 	var readings = sensor.parseStatus();
+			// 	fulfill(readings);
+			// }).catch(reject);
 		});
 	}
 	parseStatus(){
@@ -203,7 +230,7 @@ class MCP23008{
 					}
 					if(sensor.output_status != status){
 						sensor.output_status = status;
-						sensor.comm.writeBytes(this.addr, 0x0A, status).then(fulfill(sensor.parseStatus())).catch(reject);
+						sensor.comm.writeBytes(sensor.addr, 0x09, status).then(fulfill(sensor.parseStatus())).catch(reject);
 					}else{
 						fulfill(sensor.parseStatus());
 					}
