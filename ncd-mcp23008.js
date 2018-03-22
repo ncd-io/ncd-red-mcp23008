@@ -26,18 +26,9 @@ module.exports = function(RED){
 
 	function NcdI2cDeviceNode(config){
 		RED.nodes.createNode(this, config);
-
-		//console.log(_nodes.children);
-		//console.log(require.main.children);
-		//console.log(RED.nodes.getNodeList());
 		this.interval = parseInt(config.interval);
 		this.addr = parseInt(config.addr);
 		this.onchange = config.onchange;
-		// console.log(RED.registry.getModuleList());
-		// DM.checkDeps([
-		// 	'node-red-contrib-aws',
-		// ]);
-		//nodes.installModule(name)
 		if(typeof sensor_pool[this.id] != 'undefined'){
 			//Redeployment
 			clearTimeout(sensor_pool[this.id].timeout);
@@ -135,48 +126,26 @@ class MCP23008{
 		this.addr = addr;
 		this.settable = [];
 		this.initialized = true;
-		if(typeof this.init != 'undefined'){
-			try{
-				this.init();
-			}catch(e){
-				console.log({'failed to initialize': e});
-				this.initialized = false;
-			}
+		try{
+			this.init();
+		}catch(e){
+			console.log({'failed to initialize': e});
+			this.initialized = false;
 		}
 	}
+
 	init(){
 		this.iodir = 0;
 		this.data.ios = {};
 		for(var i=8;i>0;i--){
 			this.iodir = (this.iodir << 1) | (this.data["io_"+i] ? 0 : 1);
-			this.data.ios[i] = this.data["io_"+i];
+			this.data.ios[i] = this.data["io_"+i] ? 1 : 0;
 		}
 		Promise.all([
 			this.comm.writeBytes(this.addr, 0x00, this.iodir),
-			// this.comm.writeBytes(this.addr, 0x01, 0),
 			this.comm.writeBytes(this.addr, 0x06, this.iodir)
 		]).then().catch();
 		this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
-		// this.comm.readBytes(this.addr, 0x00, 11).then((config) => {
-		// 	let [iodir, ipol, gpint, defval, intcon, iocon, pu, intf, intcap, ioreg, olat] = config;
-		//
-		// 	console.log(this.iodir);
-		//
-		// 	var promises = [];
-		// 	if(iodir != this.iodir) promises.push(this.comm.writeBytes(this.addr, 0x00, this.iodir));
-		// 	if(ipol != 0) promises.push(this.comm.writeBytes(this.addr, 0x01, 0));
-		// 	if(pu != this.iodir) promises.push(this.comm.writeBytes(this.addr, 0x06, this.iodir));
-		//
-		// 	promises.push(this.comm.readBytes(this.addr, 0x00, 11));
-		//
-		// 	Promise.all(promises).then((res) => {
-		// 		console.log(res);
-		// 	}).catch((err) => {
-		// 		throw err;
-		// 	});
-		// }).catch((err) => {
-		// 	throw err;
-		// });
 	}
 	get(){
 		var sensor = this;
@@ -189,28 +158,22 @@ class MCP23008{
 				sensor.output_status = res[1];
 				var readings = sensor.parseStatus();
 				fulfill(readings);
-			}).catch(reject);
-			// sensor.comm.readBytes(sensor.addr, 0x09, 2).then((res) => {
-			// 	sensor.input_status = res[0];
-			// 	sensor.output_status = res[1];
-			// 	var readings = sensor.parseStatus();
-			// 	fulfill(readings);
-			// }).catch(reject);
+			}).catch();
 		});
 	}
 	parseStatus(){
 		var ios = this.data.ios,
 			readings = {};
 		for(var i in ios){
-			if(ios[i] == 0) readings["channel_"+i] = this.output_status & (1 << (i-1)) ? 1 : 0;
-			else readings["channel_"+i] = this.input_status & (1 << (i-1)) ? 1 : 0;
+			if(ios[i] == 1) readings["channel_"+i] = this.output_status & (1 << (i-1)) ? 1 : 0;
+			else readings["channel_"+i] = this.input_status & (1 << (i-1)) ? 0 : 1;
 		}
 		return readings;
 	}
 	set(topic, value){
 		var sensor = this;
 		return new Promise((fulfill, reject) => {
-			sensor.get().then((res) => {
+			//sensor.get().then((res) => {
 				var status = sensor.output_status;
 				if(topic == 'all'){
 					if(status != value){
@@ -230,15 +193,15 @@ class MCP23008{
 					}
 					if(sensor.output_status != status){
 						sensor.output_status = status;
-						sensor.comm.writeBytes(sensor.addr, 0x09, status).then(fulfill(sensor.parseStatus())).catch(reject);
+						sensor.comm.writeBytes(sensor.addr, 0x0A, status).then(fulfill(sensor.parseStatus())).catch(reject);
 					}else{
 						fulfill(sensor.parseStatus());
 					}
 				}
-			}).catch((err) => {
-				console.log(err);
-				reject(err);
-			});
+			// }).catch((err) => {
+			// 	console.log(err);
+			// 	reject(err);
+			// });
 		});
 	}
 }
