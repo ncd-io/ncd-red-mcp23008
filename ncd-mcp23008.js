@@ -71,7 +71,7 @@ module.exports = function(RED){
 				});
 			}else{
 				_node.sensor.init();
-				setTimeout(() => {
+				sensor_pool[_node.id].timeout = setTimeout(() => {
 					get_status({sensor: sensor_pool[_node.id].node}, repeat, sensor_pool[_node.id].node);
 				}, 3000);
 			}
@@ -98,6 +98,13 @@ module.exports = function(RED){
 					console.log(node.sensor.settable);
 				}
 			}
+		});
+		node.on('close', (removed, done) => {
+			if(removed){
+				clearTimeout(sensor_pool[node.id].timeout);
+				delete(sensor_pool[node.id]);
+			}
+			done();
 		});
 	}
 	RED.nodes.registerType("ncd-mcp23008", NcdI2cDeviceNode)

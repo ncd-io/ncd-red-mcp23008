@@ -4,27 +4,27 @@ module.exports = class MCP23008{
 		this.comm = comm;
 		this.addr = addr;
 		this.settable = [];
-		this.initialized = true;
+		this.init();
+	}
+
+	init(){
 		try{
-			this.init();
+			this.iodir = 0;
+			this.data.ios = {};
+			for(var i=8;i>0;i--){
+				this.iodir = (this.iodir << 1) | (this.data["io_"+i] ? 0 : 1);
+				this.data.ios[i] = this.data["io_"+i] ? 1 : 0;
+			}
+			Promise.all([
+				this.comm.writeBytes(this.addr, 0x00, this.iodir),
+				this.comm.writeBytes(this.addr, 0x06, this.iodir)
+			]).then().catch();
+			this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
+			this.initialized = true;
 		}catch(e){
 			console.log({'failed to initialize': e});
 			this.initialized = false;
 		}
-	}
-
-	init(){
-		this.iodir = 0;
-		this.data.ios = {};
-		for(var i=8;i>0;i--){
-			this.iodir = (this.iodir << 1) | (this.data["io_"+i] ? 0 : 1);
-			this.data.ios[i] = this.data["io_"+i] ? 1 : 0;
-		}
-		Promise.all([
-			this.comm.writeBytes(this.addr, 0x00, this.iodir),
-			this.comm.writeBytes(this.addr, 0x06, this.iodir)
-		]).then().catch();
-		this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
 	}
 	get(){
 		var sensor = this;
@@ -37,7 +37,10 @@ module.exports = class MCP23008{
 				sensor.output_status = res[1];
 				var readings = sensor.parseStatus();
 				fulfill(readings);
-			}).catch();
+			}).catch((e) => {
+				console.log({'failed to get status': e});
+				sensor.initialized = false;
+			});
 		});
 	}
 	parseStatus(){
@@ -52,11 +55,16 @@ module.exports = class MCP23008{
 	set(topic, value){
 		var sensor = this;
 		return new Promise((fulfill, reject) => {
+				function uninit(e){
+					console.log({'failed to get status': e});
+					sensor.initialized = false;
+					reject(e);
+				}
 				var status = sensor.output_status;
 				if(topic == 'all'){
 					if(status != value){
 						sensor.output_status = value;
-						sensor.comm.writeBytes(this.addr, 0x0A, value).then(fulfill(sensor.parseStatus())).catch(reject);
+						sensor.comm.writeBytes(this.addr, 0x0A, value).then(fulfill(sensor.parseStatus())).catch(uninit);
 					}else{
 						fulfill(res);
 					}
@@ -71,7 +79,7 @@ module.exports = class MCP23008{
 					}
 					if(sensor.output_status != status){
 						sensor.output_status = status;
-						sensor.comm.writeBytes(sensor.addr, 0x0A, status).then(fulfill(sensor.parseStatus())).catch(reject);
+						sensor.comm.writeBytes(sensor.addr, 0x0A, status).then(fulfill(sensor.parseStatus())).catch(uninit);
 					}else{
 						fulfill(sensor.parseStatus());
 					}
