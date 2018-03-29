@@ -24,6 +24,6 @@
         }
     },
     "dependencies": {
-        "@ncd/ncd-red-comm": "^1.0.0"
+        "ncd-red-comm": "^1.1.3"
     }
 }
