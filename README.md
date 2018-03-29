@@ -1,4 +1,4 @@
-[![MCP23008](./mcp23008.png)](https://store.ncd.io/?post_type=product&s=mcp23008&site_select=https%3A%2F%2Fstore.ncd.io%3Fpost_type%3Dproduct)
+[![MCP23008](./MCP23008.png)](https://store.ncd.io/?post_type=product&s=mcp23008&site_select=https%3A%2F%2Fstore.ncd.io%3Fpost_type%3Dproduct)
 
 # Overview
 
