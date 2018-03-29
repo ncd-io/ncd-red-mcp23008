@@ -39,8 +39,9 @@ module.exports = function(RED){
 			var msg = [],
 				dev_status = {topic: 'device_status', payload: _status};
 			if(config.output_all){
+				var old_status = JSON.parse(status);
 				for(var i in _status){
-					if(_status[i] == status[i]) msg.push(null);
+					if(node.onchange && _status[i] == old_status[i]) msg.push(null);
 					else msg.push({topic: i, payload: _status[i]})
 				}
 				msg.push(dev_status);
