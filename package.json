@@ -1,5 +1,5 @@
 {
-    "name": "ncd-red-mcp23008",
+    "name": "@ncd/ncd-red-mcp23008",
     "version": "1.0.1",
     "description": "",
     "main": "index.js",
