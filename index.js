@@ -40,6 +40,7 @@ module.exports = class MCP23008{
 			}).catch((e) => {
 				console.log({'failed to get status': e});
 				sensor.initialized = false;
+				reject(e);
 			});
 		});
 	}
