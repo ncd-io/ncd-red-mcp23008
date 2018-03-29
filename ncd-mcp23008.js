@@ -34,28 +34,29 @@ module.exports = function(RED){
 			return true;
 		}
 		var node = this;
-		var status;
+		var status = "{}";
 		function send_payload(_status){
+			if(node.onchange && JSON.stringify(_status) == status) return;
 			var msg = [],
 				dev_status = {topic: 'device_status', payload: _status};
 			if(config.output_all){
 				var old_status = JSON.parse(status);
 				for(var i in _status){
-					if(node.onchange && _status[i] == old_status[i]) msg.push(null);
-					else msg.push({topic: i, payload: _status[i]})
+					if(node.onchange && _status[i] == old_status[i]){
+						msg.push(null);
+					}else msg.push({topic: i, payload: _status[i]})
 				}
 				msg.push(dev_status);
 			}else{
 				msg = dev_status;
 			}
+			status = JSON.stringify(_status);
 			node.send(msg);
 		}
 		function get_status(msg, repeat, _node){
 			if(repeat) clearTimeout(sensor_pool[_node.id].timeout);
 			if(device_status(_node)){
 				_node.sensor.get().then((res) => {
-					if(_node.onchange && JSON.stringify(res) == status) return;
-					status = JSON.stringify(res);
 					send_payload(res);
 				}).catch((err) => {
 					_node.send({error: err});
@@ -89,8 +90,6 @@ module.exports = function(RED){
 			}else{
 				if(typeof node.sensor.settable != 'undefined' && node.sensor.settable.indexOf(msg.topic) > -1){
 					node.sensor.set(msg.topic, msg.payload).then((res) => {
-						if(node.onchange && JSON.stringify(res) == status) return;
-						status = JSON.stringify(res);
 						send_payload(res);
 					}).catch((err) => {
 						//console.log(err);
