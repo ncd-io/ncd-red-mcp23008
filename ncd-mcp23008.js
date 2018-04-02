@@ -64,7 +64,9 @@ module.exports = function(RED){
 					if(repeat){
 						if(_node.interval){
 							sensor_pool[_node.id].timeout = setTimeout(() => {
-								get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
+								if(typeof sensor_pool[_node.id] != 'undefined'){
+									get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
+								}
 							}, _node.interval);
 						}else{
 							sensor_pool[_node.id].polling = false;
@@ -74,7 +76,9 @@ module.exports = function(RED){
 			}else{
 				_node.sensor.init();
 				sensor_pool[_node.id].timeout = setTimeout(() => {
-					get_status({sensor: sensor_pool[_node.id].node}, repeat, sensor_pool[_node.id].node);
+					if(typeof sensor_pool[_node.id] != 'undefined'){
+						get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
+					}
 				}, 3000);
 			}
 		}
