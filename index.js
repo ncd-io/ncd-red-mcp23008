@@ -39,8 +39,7 @@ module.exports = class MCP23008{
 			]).then((res) => {
 				sensor.input_status = res[0];
 				sensor.output_status = res[1];
-				var readings = sensor.parseStatus();
-				fulfill(readings);
+				fulfill(sensor.parseStatus());
 			}).catch((e) => {
 				sensor.initialized = false;
 				reject(e);

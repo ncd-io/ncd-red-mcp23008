@@ -25,16 +25,31 @@ module.exports = function(RED){
 			timeout: 0,
 			node: this
 		}
-		function device_status(_node){
-			if(!_node.sensor.initialized){
-				_node.status({fill:"red",shape:"ring",text:"disconnected"});
-				return false;
-			}
-			_node.status({fill:"green",shape:"dot",text:"connected"});
-			return true;
-		}
+
 		var node = this;
 		var status = "{}";
+
+		function device_status(){
+			if(!node.sensor.initialized){
+				node.status({fill:"red",shape:"ring",text:"disconnected"});
+				return false;
+			}
+			node.status({fill:"green",shape:"dot",text:"connected"});
+			return true;
+		}
+
+		function start_poll(){
+			if(node.interval && !sensor_pool[node.id].polling){
+				sensor_pool[node.id].polling = true;
+				get_status(true);
+			}
+		}
+
+		function stop_poll(){
+			clearTimeout(sensor_pool[node.id].timeout);
+			sensor_pool[node.id].polling = false;
+		}
+
 		function send_payload(_status){
 			if(node.onchange && JSON.stringify(_status) == status) return;
 			var msg = [],
@@ -57,58 +72,53 @@ module.exports = function(RED){
 				node.send(msg);
 			}
 		}
-		function get_status(msg, repeat, _node){
-			if(repeat) clearTimeout(sensor_pool[_node.id].timeout);
-			if(device_status(_node)){
-				_node.sensor.get().then((res) => {
+
+		function get_status(repeat){
+			if(repeat) clearTimeout(sensor_pool[node.id].timeout);
+			if(device_status(node)){
+				node.sensor.get().then((res) => {
 					send_payload(res);
 				}).catch((err) => {
-					_node.send({error: err});
+					node.send({error: err});
 				}).then(() => {
-					if(repeat){
-						if(_node.interval){
-							clearTimeout(sensor_pool[_node.id].timeout);
-							sensor_pool[_node.id].timeout = setTimeout(() => {
-								if(typeof sensor_pool[_node.id] != 'undefined'){
-									get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
-								}
-							}, _node.interval);
-						}else{
-							sensor_pool[_node.id].polling = false;
-						}
+					if(repeat && node.interval){
+						clearTimeout(sensor_pool[node.id].timeout);
+						sensor_pool[node.id].timeout = setTimeout(() => {
+							if(typeof sensor_pool[node.id] != 'undefined'){
+								get_status(true);
+							}
+						}, node.interval);
+					}else{
+						sensor_pool[node.id].polling = false;
 					}
 				});
 			}else{
-				_node.sensor.init();
-				clearTimeout(sensor_pool[_node.id].timeout);
-				sensor_pool[_node.id].timeout = setTimeout(() => {
-					if(typeof sensor_pool[_node.id] != 'undefined'){
-						get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
+				node.sensor.init();
+				clearTimeout(sensor_pool[node.id].timeout);
+				sensor_pool[node.id].timeout = setTimeout(() => {
+					if(typeof sensor_pool[node.id] != 'undefined'){
+						get_status(true);
 					}
 				}, 3000);
 			}
 		}
 
-		if(node.interval && !sensor_pool[node.id].polling){
-			sensor_pool[node.id].polling = true;
-			get_status({sensor: node}, true, sensor_pool[this.id].node);
-		}
-		device_status(node);
+
+
+
 		node.on('input', (msg) => {
-			if(msg.topic == 'get_status'){
-				get_status(msg, false, sensor_pool[this.id].node);
-			}else{
+			stop_poll();
+			if(msg.topic != 'get_status'){
 				if(typeof node.sensor.settable != 'undefined' && node.sensor.settable.indexOf(msg.topic) > -1){
-					node.sensor.set(msg.topic, msg.payload).then((res) => {
-						send_payload(res);
-					}).catch((err) => {
-						//console.log(err);
+					node.sensor.set(msg.topic, msg.payload).then().catch().then(() => {
+						start_poll()
 					});
-				}else{
-					console.log(node.sensor.settable);
 				}
+			}else{
+				start_poll()
 			}
 		});
+
 		node.on('close', (removed, done) => {
 			if(removed){
 				clearTimeout(sensor_pool[node.id].timeout);
@@ -116,6 +126,9 @@ module.exports = function(RED){
 			}
 			done();
 		});
+
+		start_poll();
+		device_status(node);
 	}
 	RED.nodes.registerType("ncd-mcp23008", NcdI2cDeviceNode)
 }
