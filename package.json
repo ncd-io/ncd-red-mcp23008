@@ -25,5 +25,9 @@
     },
     "dependencies": {
         "ncd-red-comm": "^1.1.3"
-    }
+    },
+	"bugs": {
+	    "url": "https://github.com/ncd-io/ncd-red-mcp23008/issues"
+	  },
+	  "homepage": "https://github.com/ncd-io/ncd-red-mcp23008#readme"
 }
