@@ -50,8 +50,12 @@ module.exports = function(RED){
 			}else{
 				msg = dev_status;
 			}
-			status = JSON.stringify(_status);
-			node.send(msg);
+			if(status == "{}"){
+				status = JSON.stringify(_status);
+			}else{
+				status = JSON.stringify(_status);
+				node.send(msg);
+			}
 		}
 		function get_status(msg, repeat, _node){
 			if(repeat) clearTimeout(sensor_pool[_node.id].timeout);
@@ -63,6 +67,7 @@ module.exports = function(RED){
 				}).then(() => {
 					if(repeat){
 						if(_node.interval){
+							clearTimeout(sensor_pool[_node.id].timeout);
 							sensor_pool[_node.id].timeout = setTimeout(() => {
 								if(typeof sensor_pool[_node.id] != 'undefined'){
 									get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
@@ -75,6 +80,7 @@ module.exports = function(RED){
 				});
 			}else{
 				_node.sensor.init();
+				clearTimeout(sensor_pool[_node.id].timeout);
 				sensor_pool[_node.id].timeout = setTimeout(() => {
 					if(typeof sensor_pool[_node.id] != 'undefined'){
 						get_status({sensor: sensor_pool[_node.id].node}, true, sensor_pool[_node.id].node);
