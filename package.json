@@ -17,14 +17,14 @@
         "i2c"
     ],
     "author": "Trey Felton",
-    "license": "ISC",
+    "license": "MIT",
     "node-red": {
         "nodes": {
             "ncd-mcp23008": "ncd-mcp23008.js"
         }
     },
     "dependencies": {
-        "ncd-red-comm": "^1.1.3"
+        "ncd-red-comm": "^1.2.0"
     },
 	"bugs": {
 	    "url": "https://github.com/ncd-io/ncd-red-mcp23008/issues"
