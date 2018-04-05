@@ -1,6 +1,6 @@
 {
     "name": "ncd-red-mcp23008",
-    "version": "1.2.0",
+    "version": "1.2.2",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -26,8 +26,8 @@
     "dependencies": {
         "ncd-red-comm": "^1.2.0"
     },
-	"bugs": {
-	    "url": "https://github.com/ncd-io/ncd-red-mcp23008/issues"
-	  },
-	  "homepage": "https://github.com/ncd-io/ncd-red-mcp23008#readme"
+    "bugs": {
+        "url": "https://github.com/ncd-io/ncd-red-mcp23008/issues"
+    },
+    "homepage": "https://github.com/ncd-io/ncd-red-mcp23008#readme"
 }
