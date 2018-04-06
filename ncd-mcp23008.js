@@ -38,10 +38,10 @@ module.exports = function(RED){
 			return true;
 		}
 
-		function start_poll(){
+		function start_poll(force){
 			if(node.interval && !sensor_pool[node.id].polling){
 				sensor_pool[node.id].polling = true;
-				get_status(true);
+				get_status(true, force);
 			}
 		}
 
@@ -50,14 +50,14 @@ module.exports = function(RED){
 			sensor_pool[node.id].polling = false;
 		}
 
-		function send_payload(_status){
-			if(node.onchange && JSON.stringify(_status) == status) return;
+		function send_payload(_status, force){
+			if(!force && node.onchange && JSON.stringify(_status) == status) return;
 			var msg = [],
 				dev_status = {topic: 'device_status', payload: _status};
 			if(config.output_all){
 				var old_status = JSON.parse(status);
 				for(var i in _status){
-					if(node.onchange && _status[i] == old_status[i]){
+					if(!force && node.onchange && _status[i] == old_status[i]){
 						msg.push(null);
 					}else msg.push({topic: i, payload: _status[i]})
 				}
@@ -73,11 +73,11 @@ module.exports = function(RED){
 			}
 		}
 
-		function get_status(repeat){
+		function get_status(repeat, force){
 			if(repeat) clearTimeout(sensor_pool[node.id].timeout);
 			if(device_status(node)){
 				node.sensor.get().then((res) => {
-					send_payload(res);
+					send_payload(res, force);
 				}).catch((err) => {
 					node.send({error: err});
 				}).then(() => {
@@ -103,9 +103,6 @@ module.exports = function(RED){
 			}
 		}
 
-
-
-
 		node.on('input', (msg) => {
 			stop_poll();
 			if(msg.topic != 'get_status'){
@@ -115,7 +112,7 @@ module.exports = function(RED){
 					});
 				}
 			}else{
-				start_poll()
+				start_poll(true);
 			}
 		});
 
