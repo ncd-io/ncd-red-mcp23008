@@ -2,7 +2,7 @@
 
 ### Overview
 
-This library provides a class for the MCP23008, it relies on the ncd-red-comm library for communication, and includes a node-red node for the MCP23008. The MCP23008 is an Integrated port expander that controls eight I/O channels through the I2C bus. [Ncd.io](https://ncd.io) manufactures dozens of boards, both mini-modules and full size, that utilize this chip for different applications. You can see a [list here](https://store.ncd.io/?post_type=product&s=mcp23008&site_select=https%3A%2F%2Fstore.ncd.io%3Fpost_type%3Dproduct).
+This library provides a class for the MCP23008, it relies on the ncd-red-comm library for communication, and includes a node-red node for the MCP23008. The MCP23008 is an Integrated port expander that controls eight I/O channels through the I2C bus. [Ncd.io](https://ncd.io) manufactures dozens of boards, both mini-modules and full size, that utilize this chip for different applications. You can see a [list here](https://store.ncd.io/?fwpcache=all&fwp_chip_name=mcp23008).
 
 [![MCP23008](./MCP23008.png)](https://store.ncd.io/?post_type=product&s=mcp23008&site_select=https%3A%2F%2Fstore.ncd.io%3Fpost_type%3Dproduct)
 
