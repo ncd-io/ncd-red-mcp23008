@@ -65,12 +65,16 @@ module.exports = function(RED){
 		}
 
 		function restore_state(){
+			var state;
 			if(config.persist && node.settings.last_state){
-				stop_poll();
-				node.sensor.set('all', node.settings.last_state).then().catch().then(() => {
-					start_poll();
-				});
-			}
+				state = node.settings.last_state;
+			}else if(config.startup){
+				state = config.startup*1;
+			}else return;
+			stop_poll();
+			node.sensor.set('all', state).then().catch().then(() => {
+				start_poll();
+			});
 		}
 
 		function send_payload(_status, force){
