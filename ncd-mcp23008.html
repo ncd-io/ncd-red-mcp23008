@@ -1,8 +1,4 @@
 <script type="text/javascript">
-	RED.comms.subscribe('ncd-dependencies', (t,d) => {
-
-		RED.notify(d);
-	})
     RED.nodes.registerType('ncd-mcp23008',{
         category: 'NCD',
         color: '#a6bbcf',
@@ -12,6 +8,8 @@
 			addr: {value: "32"},
 			interval: {value: 0, validate: RED.validators.number()},
 			onchange: {value: ""},
+			persist: {value: ""},
+			send_init: {value: ""},
 			outputs: {value: 1},
 			output_all: {value: 0},
 			io_1: {value: 1},
@@ -70,6 +68,15 @@
         <label for="node-input-onchange"><i class="icon-tag"></i> Only send message on change</label>
         <input type="checkbox" id="node-input-onchange" value="1" placeholder="Interval">
     </div>
+	<div class="form-row">
+		<label for="node-input-send_init"><i class="icon-tag"></i> Output on Init</label>
+		<input type="checkbox" id="node-input-send_init" value="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-persist"><i class="icon-tag"></i> Persist Device State*</label>
+		<input type="checkbox" id="node-input-persist" value="1"><br/>
+		<span><b>* Use this with care, see note in info tab.</b></span>
+	</div>
 	<div class="form-row" id="ncd-device-data-wrapper">
     	<input type="hidden" id="node-input-data">
 	</div>
@@ -132,6 +139,10 @@
 	<p>The interval defines the time between status checks. It is in milliseconds, and the interval starts after the previous check has finished.</p>
 	<h3>Message on Change</h3>
 	<p>If this option is set, the device will only generate an output message if the status of the inputs or outputs has changed since the last status check or command.</p>
+	<h3>Output on Init</h3>
+	<p>Select this to automatically output the initial state of the board when the node is deployed or redeployed. This includes when node red is started.</p>
+	<h3>Persist Device State</h3>
+	<p>This will store the last known good state of the controller locally so if it loses power it can recover. This should be used with care, if you are running on an SD card this can cause more wear. </p>
 	<h3>Output All Channels</h3>
 	<p>By default this device will have 1 output, which will send a payload anytime it detects a status change on the device (or everyime it recieves a message with a topic of "get_status"). Use this option to enable seperate outputs for each channel.</p>
 	<h3>Channel Direction</h3>

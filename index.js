@@ -68,7 +68,7 @@ module.exports = class MCP23008{
 						sensor.output_status = value;
 						sensor.comm.writeBytes(this.addr, 0x0A, value).then(fulfill(sensor.parseStatus())).catch(uninit);
 					}else{
-						fulfill(res);
+						fulfill(sensor.parseStatus());
 					}
 				}else{
 					var channel = topic.split('_')[1];

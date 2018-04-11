@@ -1,6 +1,12 @@
 "use strict";
 
 const MCP23008 = require("./index.js");
+const comm = require("ncd-red-comm");
+
+process.on('unhandledRejection', error => {
+  console.log('unhandledRejection', error);
+});
+
 
 module.exports = function(RED){
 	var sensor_pool = {};
@@ -18,6 +24,7 @@ module.exports = function(RED){
 			clearTimeout(sensor_pool[this.id].timeout);
 			delete(sensor_pool[this.id]);
 		}
+
 		this.sensor = new MCP23008(this.addr, config, RED.nodes.getNode(config.connection).i2c);
 		sensor_pool[this.id] = {
 			sensor: this.sensor,
@@ -25,21 +32,28 @@ module.exports = function(RED){
 			timeout: 0,
 			node: this
 		}
-
+		if(config.persist){
+			this.settings = comm.NcdSettings(config, this.context().global);
+		}
 		var node = this;
 		var status = "{}";
+		var last_status = false;
 
 		function device_status(){
 			if(!node.sensor.initialized){
 				node.status({fill:"red",shape:"ring",text:"disconnected"});
+				last_status = false;
 				return false;
 			}
+			if(!last_status) restore_state();
+			last_status = true;
 			node.status({fill:"green",shape:"dot",text:"connected"});
 			return true;
 		}
 
 		function start_poll(force){
 			if(node.interval && !sensor_pool[node.id].polling){
+				stop_poll();
 				sensor_pool[node.id].polling = true;
 				get_status(true, force);
 			}
@@ -48,6 +62,15 @@ module.exports = function(RED){
 		function stop_poll(){
 			clearTimeout(sensor_pool[node.id].timeout);
 			sensor_pool[node.id].polling = false;
+		}
+
+		function restore_state(){
+			if(config.persist && node.settings.last_state){
+				stop_poll();
+				node.sensor.set('all', node.settings.last_state).then().catch().then(() => {
+					start_poll();
+				});
+			}
 		}
 
 		function send_payload(_status, force){
@@ -65,7 +88,7 @@ module.exports = function(RED){
 			}else{
 				msg = dev_status;
 			}
-			if(status == "{}"){
+			if(!config.send_init && status == "{}"){
 				status = JSON.stringify(_status);
 			}else{
 				status = JSON.stringify(_status);
@@ -107,7 +130,9 @@ module.exports = function(RED){
 			stop_poll();
 			if(msg.topic != 'get_status'){
 				if(typeof node.sensor.settable != 'undefined' && node.sensor.settable.indexOf(msg.topic) > -1){
-					node.sensor.set(msg.topic, msg.payload).then().catch().then(() => {
+					node.sensor.set(msg.topic, msg.payload).then((_status) => {
+						if(config.persist) node.settings.last_state = node.sensor.output_status;
+					}).catch().then(() => {
 						start_poll()
 					});
 				}
