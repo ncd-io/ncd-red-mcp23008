@@ -37,7 +37,6 @@
 				if($(this).is(':checked')) $('#startup-wrapper').hide();
 				else $('#startup-wrapper').show();
 			});
-			console.log(this.persist);
 			if(this.persist) $('#startup-wrapper').hide();
 		},
 		oneditsave: function(){
@@ -159,8 +158,10 @@
 	<h3>Channel Direction</h3>
 	<p>Each selected channel will be configured as an output. Any channels left unchecked will be pulled up internally and set as an input.</p>
 	<h3>Persist Device State</h3>
-	<p>This will store the last known good state of the controller locally so if it loses power it can recover. This should be used with care, if you are running on an SD card this can cause more wear. </p>
+	<p><b>This setting is only effective if an interval is defined</b></p>
+	<p>This will store the last known good state of the controller locally so if it loses power it can recover. This should be used with care, if you are running on an SD card this can cause more wear.</p>
 	<h3>Startup State</h3>
+	<p><b>This setting is only effective if an interval is defined</b></p>
 	<p>If you are not using Persist Device State, you can set a startup state for the outputs here, this should be an integer as described below in the Input Values section relating to the "all" topic.
 	<h3>Input values</h3>
 	<p>You can send commands to the device through the use of topics and payloads. Any input messages that do not contain a compatible topic will be ignored. The compatible topics are:</p>

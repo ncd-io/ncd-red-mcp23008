@@ -4,31 +4,24 @@ module.exports = class MCP23008{
 		this.comm = comm;
 		this.addr = addr;
 		this.settable = [];
-		this.init();
+		this.iodir = 0;
+		this.data.ios = {};
+		for(var i=8;i>0;i--){
+			this.iodir = (this.iodir << 1) | (this.data["io_"+i] ? 0 : 1);
+			this.data.ios[i] = this.data["io_"+i] ? 1 : 0;
+		}
+		this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
 	}
-
 	init(){
-		//try{
-			this.iodir = 0;
-			this.data.ios = {};
-			for(var i=8;i>0;i--){
-				this.iodir = (this.iodir << 1) | (this.data["io_"+i] ? 0 : 1);
-				this.data.ios[i] = this.data["io_"+i] ? 1 : 0;
-			}
-			this.settable = ['all', 'channel_1', 'channel_2', 'channel_3', 'channel_4', 'channel_5', 'channel_6', 'channel_7', 'channel_8'];
-			Promise.all([
-				this.comm.writeBytes(this.addr, 0x00, this.iodir),
-				this.comm.writeBytes(this.addr, 0x06, this.iodir)
-			]).then((r) => {
-				this.initialized = true;
-			}).catch((e) => {
-				this.initialized = false;
-			});
-
-		// }catch(e){
-		// 	console.log({'failed to initialize': e});
-		// 	this.initialized = false;
-		// }
+		Promise.all([
+			this.comm.writeBytes(this.addr, 0x00, this.iodir),
+			this.comm.writeBytes(this.addr, 0x06, this.iodir),
+			this.get()
+		]).then((r) => {
+			this.initialized = true;
+		}).catch((e) => {
+			this.initialized = false;
+		});
 	}
 	get(){
 		var sensor = this;

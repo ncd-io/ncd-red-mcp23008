@@ -42,11 +42,8 @@ module.exports = function(RED){
 		function device_status(){
 			if(!node.sensor.initialized){
 				node.status({fill:"red",shape:"ring",text:"disconnected"});
-				last_status = false;
 				return false;
 			}
-			if(!last_status) restore_state();
-			last_status = true;
 			node.status({fill:"green",shape:"dot",text:"connected"});
 			return true;
 		}
@@ -71,6 +68,7 @@ module.exports = function(RED){
 			}else if(config.startup){
 				state = config.startup*1;
 			}else return;
+
 			stop_poll();
 			node.sensor.set('all', state).then().catch().then(() => {
 				start_poll();
@@ -103,6 +101,10 @@ module.exports = function(RED){
 		function get_status(repeat, force){
 			if(repeat) clearTimeout(sensor_pool[node.id].timeout);
 			if(device_status(node)){
+				if(!last_status){
+					last_status = true;
+					restore_state();
+				}
 				node.sensor.get().then((res) => {
 					send_payload(res, force);
 				}).catch((err) => {
@@ -120,8 +122,9 @@ module.exports = function(RED){
 					}
 				});
 			}else{
-				node.sensor.init();
+				last_status = false;
 				clearTimeout(sensor_pool[node.id].timeout);
+				node.sensor.init();
 				sensor_pool[node.id].timeout = setTimeout(() => {
 					if(typeof sensor_pool[node.id] != 'undefined'){
 						get_status(true);
