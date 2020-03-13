@@ -12,6 +12,7 @@
 			send_init: {value: ""},
 			outputs: {value: 1},
 			output_all: {value: 0},
+            interrupt: {value: 0},
 			io_1: {value: 1},
 			io_2: {value: 1},
 			io_3: {value: 1},
@@ -116,7 +117,11 @@
     </div>
 	<div class="form-row">
         <label for="node-input-onchange"><i class="icon-tag"></i> Only send message on change</label>
-        <input type="checkbox" id="node-input-onchange" value="1" placeholder="Interval">
+        <input type="checkbox" id="node-input-onchange" value="1">
+    </div>
+    <div class="form-row">
+        <label for="node-input-interrupt"><i class="icon-tag"></i> Enable Interrupt Pin</label>
+        <input type="checkbox" id="node-input-interrupt" value="1">
     </div>
 	<div class="form-row">
 		<label for="node-input-send_init"><i class="icon-tag"></i> Output on Init</label>
@@ -194,7 +199,9 @@
 	<p>The interval defines the time between status checks. It is in milliseconds, and the interval starts after the previous check has finished.</p>
 	<h3>Message on Change</h3>
 	<p>If this option is set, the device will only generate an output message if the status of the inputs or outputs has changed since the last status check or command.</p>
-	<h3>Output on Init</h3>
+    <h3>Interrupt Pin</h3>
+    <p>This option will enable the interrupt-on-change behavior for all inputs, and add an "interrupt" key to the outputs which will contain the channel number that triggered the input.</p>
+    <h3>Output on Init</h3>
 	<p>Select this to automatically output the initial state of the board when the node is deployed or redeployed. This includes when node red is started.</p>
 	<h3>Output All Channels</h3>
 	<p>By default this device will have 1 output, which will send a payload anytime it detects a status change on the device (or everyime it recieves a message with a topic of "get_status"). Use this option to enable seperate outputs for each channel.</p>

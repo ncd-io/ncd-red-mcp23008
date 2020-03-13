@@ -12,8 +12,6 @@ module.exports = function(RED){
 	var sensor_pool = {};
 	var loaded = [];
 
-	//ensureDependencies(['node-red-contrib-aws', 'fail']);
-
 	function NcdI2cDeviceNode(config){
 		RED.nodes.createNode(this, config);
 		this.interval = parseInt(config.interval);
@@ -24,7 +22,6 @@ module.exports = function(RED){
 			clearTimeout(sensor_pool[this.id].timeout);
 			delete(sensor_pool[this.id]);
 		}
-
 		this.sensor = new MCP23008(this.addr, config, RED.nodes.getNode(config.connection).i2c);
 		sensor_pool[this.id] = {
 			sensor: this.sensor,
