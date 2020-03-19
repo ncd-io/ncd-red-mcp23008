@@ -87,10 +87,9 @@ module.exports = function(RED){
 			}else{
 				msg = dev_status;
 			}
-			if(!config.send_init && status == "{}"){
-				status = JSON.stringify(_status);
-			}else{
-				status = JSON.stringify(_status);
+            if("interrupt" in _status) delete _status.interrupt;
+			status = JSON.stringify(_status);
+            if(!(!config.send_init && status == "{}")){
 				node.send(msg);
 			}
 		}
