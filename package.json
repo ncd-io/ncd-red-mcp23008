@@ -1,6 +1,6 @@
 {
     "name": "ncd-red-mcp23008",
-    "version": "1.5.3",
+    "version": "1.5.4",
     "description": "",
     "main": "index.js",
     "scripts": {
