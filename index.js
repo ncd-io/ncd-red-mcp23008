@@ -30,13 +30,11 @@ module.exports = class MCP23008{
 		return new Promise((fulfill, reject) => {
 			var get_p = [];
 			Promise.all([
-				sensor.comm.readByte(sensor.addr, 7),
+				this.data.interrupt ? sensor.comm.readByte(sensor.addr, 7) : Promise.resolve(0),
 				sensor.comm.readByte(sensor.addr, 9),
 				sensor.comm.readByte(sensor.addr, 10)
 			]).then((res) => {
-				if(this.data.interrupt){
-					sensor.trigger = res.shift();
-				}
+				sensor.trigger = res.shift();
 				sensor.input_status = res[0];
 				sensor.output_status = res[1];
 				fulfill(sensor.parseStatus());
@@ -53,7 +51,7 @@ module.exports = class MCP23008{
 			if(ios[i] == 1) readings["channel_"+i] = this.output_status & (1 << (i-1)) ? 1 : 0;
 			else readings["channel_"+i] = this.input_status & (1 << (i-1)) ? 0 : 1;
 		}
-		if(this.data.interrupt && this.trigger) readings.interrupt = this.trigger.toString(2).length;
+		if(this.data.interrupt) readings.interrupt = this.trigger.toString(2).length;
 		return readings;
 	}
 	set(topic, value){
